@@ -13,6 +13,7 @@ r = s.post(url=url, data={"email": "<email>"})
 Replace with the password reset endpoint
 
 `<email>`
+Replace with valid email
 
 ## When this script works
 
