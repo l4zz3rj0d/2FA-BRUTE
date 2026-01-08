@@ -2,7 +2,6 @@
 
 This script brute-forces a 4-digit password recovery code on a vulnerable password reset endpoint and identifies the valid code by analyzing server responses.
 
-Designed for authorized labs only (TryHackMe / CTF-style environments). If you run this on production, the universe will judge you silently.
 
 ## What YOU need to change
 
