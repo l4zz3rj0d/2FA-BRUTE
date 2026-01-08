@@ -19,17 +19,17 @@ Replace with valid email
 
 This script works only if:
 
-Recovery codes are numeric (0000–9999)
+- Recovery codes are numeric (0000–9999)
 
-No proper rate limiting
+- No proper rate limiting
 
-Reset endpoint responds differently for valid vs invalid codes
+- Reset endpoint responds differently for valid vs invalid codes
 
-Server trusts spoofed headers (X-Forwarded-For)
+- Server trusts spoofed headers (X-Forwarded-For)
 
-Session is reused (requests.session())
+- Session is reused (requests.session())
 
-If the app is secure, this script will fail — as it should. Progress, not a bug.
+
 
 ## How to run
 python3 brute-force.py
