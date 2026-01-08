@@ -10,14 +10,9 @@ Edit only these fields:
 url = "<reset-pass-endpoint>"
 r = s.post(url=url, data={"email": "<email>"})
 ```
-`<reset-pass-endpoint>`
-
-Replace with the password reset endpoint, for example:
+Replace with the password reset endpoint
 
 `<email>`
-
-Replace with the  account email used to trigger the reset:
-
 
 ## When this script works
 
