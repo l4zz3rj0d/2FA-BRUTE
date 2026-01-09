@@ -7,8 +7,7 @@ This script brute-forces a 4-digit password recovery code on a vulnerable passwo
 
 Edit only these fields:
 ```
-url = "<reset-pass-endpoint>"
-r = s.post(url=url, data={"email": "<email>"})
+url = "<reset-password-url>"
 ```
 Replace with the password reset endpoint
 
